@@ -4,16 +4,10 @@ import { ReviewModel } from './reviews.model';
 const createReviewIntoDB = async (review: TReview) => {
   const result = await ReviewModel.create(review);
 
-  // send selective data to frontend
-  const sendData = result.toObject({
-    virtuals: false,
-    versionKey: false,
-    transform: (doc, ret) => {
-      delete ret.createdAt;
-      delete ret.updatedAt;
-      delete ret.__v;
-    },
-  });
+  const sendData = await ReviewModel.findOne(result._id, { __v: 0 }).populate(
+    'createdBy',
+    '-password -isDeleted -createdAt -updatedAt -__v',
+  );
   return sendData;
 };
 

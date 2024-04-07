@@ -5,6 +5,20 @@ import { ReviewModel } from '../reviews/reviews.model';
 import AppError from '../../errors/AppError';
 import { StatusCodes } from 'http-status-codes';
 
+const createCourseIntoDB = async (course: TCourse) => {
+  const result = await CourseModel.create(course);
+
+  // send selective data to frontend
+  const sendData = result.toObject({
+    virtuals: false,
+    versionKey: false,
+    transform: (doc, ret) => {
+      delete ret.__v;
+    },
+  });
+  return sendData;
+};
+
 const getExpectedCoursesFromDB = async (query: Record<string, unknown>) => {
   const filterQueryObj = { ...query };
 
@@ -110,9 +124,9 @@ const getExpectedCoursesFromDB = async (query: Record<string, unknown>) => {
   // Perform the search query
   const sortQuery = CourseModel.find(levelQueryObj, {
     __v: 0,
-    createdAt: 0,
-    updatedAt: 0,
-  }).sort(sortOptions);
+  })
+    .populate('createdBy', '-password -isDeleted -createdAt -updatedAt -__v')
+    .sort(sortOptions);
 
   //pagination and limiting
   let page = 1;
@@ -136,9 +150,12 @@ const getExpectedCoursesFromDB = async (query: Record<string, unknown>) => {
 const getSingleCourseWithReviewFromDB = async (courseId: string) => {
   const result = await CourseModel.findOne(
     { _id: courseId },
-    { updatedAt: 0, __v: 0 },
-  );
-  const reviews = await ReviewModel.find({ courseId: courseId });
+    { __v: 0 },
+  ).populate('createdBy', '-password -isDeleted -createdAt -updatedAt -__v');
+  const reviews = await ReviewModel.find(
+    { courseId: courseId },
+    { __v: 0 },
+  ).populate('createdBy', '-password -isDeleted -createdAt -updatedAt -__v');
   return { course: result, reviews: reviews };
 };
 
@@ -263,7 +280,10 @@ const updateCourseIntoDB = async (courseId: string, data: Partial<TCourse>) => {
     await session.commitTransaction();
     await session.endSession();
 
-    const result = await CourseModel.findById(courseId);
+    const result = await CourseModel.findById(courseId, { __v: 0 }).populate(
+      'createdBy',
+      '-password -isDeleted -createdAt -updatedAt -__v',
+    );
     return result;
   } catch (error) {
     await session.abortTransaction();
@@ -276,4 +296,5 @@ export const coursesServices = {
   getExpectedCoursesFromDB,
   getSingleCourseWithReviewFromDB,
   updateCourseIntoDB,
+  createCourseIntoDB,
 };

@@ -1,6 +1,23 @@
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../utilities/catchAsync';
 import { coursesServices } from './courses.service';
+import sendResponse from '../../utilities/sendResponse';
+
+const createCourse = catchAsync(async (req, res) => {
+  const data = req.body;
+
+  // call service function to create a new course
+  const result = await coursesServices.createCourseIntoDB({
+    ...data,
+    createdBy: req?.user._id,
+  });
+  sendResponse(res, {
+    statusCode: StatusCodes.CREATED,
+    success: true,
+    message: 'Course is created successfully.',
+    data: result,
+  });
+});
 
 const getExpectedCourses = catchAsync(async (req, res) => {
   // call service function to get all categories
@@ -28,7 +45,7 @@ const getSingleCourseWithReview = catchAsync(async (req, res) => {
   res.status(StatusCodes.OK).json({
     success: true,
     StatusCode: StatusCodes.OK,
-    message: 'Course and Reviews retrieved successfully',
+    message: 'Course with reviews retrieved successfully',
     data: result,
   });
 });
@@ -50,4 +67,5 @@ export const coursesControllers = {
   getExpectedCourses,
   getSingleCourseWithReview,
   updateCourse,
+  createCourse,
 };

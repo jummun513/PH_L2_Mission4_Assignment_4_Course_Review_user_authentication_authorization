@@ -8,12 +8,19 @@ import { handleValidationError } from '../errors/handleValidationError';
 import { handleCastError } from '../errors/handleCastError';
 import { handleDuplicateError } from '../errors/handleDuplicateError';
 import AppError from '../errors/AppError';
+import {
+  JsonWebTokenError,
+  NotBeforeError,
+  TokenExpiredError,
+} from 'jsonwebtoken';
+import { handleJwtError } from '../errors/handleJwtError';
 
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
   let message = 'Something Went Wrong!';
   let errorMessage = '';
   let errorDetails = err;
+  let stack = err?.stack || null;
 
   if (err instanceof ZodError) {
     // zod validation error
@@ -45,6 +52,17 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     statusCode = err?.statusCode;
     message = 'App Error';
     errorMessage = err?.message;
+  } else if (
+    err instanceof JsonWebTokenError ||
+    err instanceof TokenExpiredError ||
+    err instanceof NotBeforeError
+  ) {
+    const simplifiedError = handleJwtError(err);
+    statusCode = simplifiedError.statusCode;
+    message = simplifiedError?.message;
+    errorMessage = simplifiedError?.errorMessage;
+    errorDetails = null;
+    stack = null;
   }
 
   return res.status(statusCode).json({
@@ -53,7 +71,7 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     errorMessage,
     errorDetails,
     // stack: config.node_env === 'development' ? err?.stack : null,
-    stack: err?.stack || null,
+    stack,
   });
 };
 

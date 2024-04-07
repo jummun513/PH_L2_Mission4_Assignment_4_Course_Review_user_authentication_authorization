@@ -71,6 +71,6 @@ userRegisterSchema.statics.isPasswordMatched = async function (
 };
 
 export const AuthUserRegister = model<TUserRegister, UserRegistrationModel>(
-  'user',
+  'User',
   userRegisterSchema,
 );

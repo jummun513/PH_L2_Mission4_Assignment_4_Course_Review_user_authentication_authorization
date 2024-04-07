@@ -9,8 +9,6 @@ const createCategoryIntoDB = async (category: TCategory) => {
     virtuals: false,
     versionKey: false,
     transform: (doc, ret) => {
-      delete ret.createdAt;
-      delete ret.updatedAt;
       delete ret.__v;
     },
   });
@@ -18,7 +16,9 @@ const createCategoryIntoDB = async (category: TCategory) => {
 };
 
 const getAllCategoriesFromDB = async () => {
-  const result = await CategoryModel.find().select('_id name');
+  const result = await CategoryModel.find()
+    .populate('createdBy', '-password -isDeleted -createdAt -updatedAt -__v')
+    .select('-__v');
   return result;
 };
 

@@ -1,22 +1,5 @@
 import { ReviewModel } from '../reviews/reviews.model';
-import { TCourse } from './course.interface';
 import { CourseModel } from './course.model';
-
-const createCourseIntoDB = async (course: TCourse) => {
-  const result = await CourseModel.create(course);
-
-  // send selective data to frontend
-  const sendData = result.toObject({
-    virtuals: false,
-    versionKey: false,
-    transform: (doc, ret) => {
-      delete ret.createdAt;
-      delete ret.updatedAt;
-      delete ret.__v;
-    },
-  });
-  return sendData;
-};
 
 const getBestCourseFromDB = async () => {
   const bestCourseData = await ReviewModel.aggregate([
@@ -33,9 +16,7 @@ const getBestCourseFromDB = async () => {
 
   const bestCourseDetails = await CourseModel.findById(bestCourseData[0]._id, {
     __v: 0,
-    createdAt: 0,
-    updatedAt: 0,
-  });
+  }).populate('createdBy', '-password -isDeleted -createdAt -updatedAt -__v');
 
   const bestCourse = {
     course: bestCourseDetails,
@@ -47,6 +28,5 @@ const getBestCourseFromDB = async () => {
 };
 
 export const courseServices = {
-  createCourseIntoDB,
   getBestCourseFromDB,
 };

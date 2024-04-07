@@ -10,6 +10,11 @@ const categorySchema = new Schema<TCategory>(
       required: [true, 'Name is required.'],
       unique: true,
     },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'CreatedBy Id is required!'],
+      ref: 'User',
+    },
   },
   {
     timestamps: true,
@@ -28,4 +33,4 @@ categorySchema.pre('save', async function (next) {
   next();
 });
 
-export const CategoryModel = model<TCategory>('categories', categorySchema);
+export const CategoryModel = model<TCategory>('Categories', categorySchema);

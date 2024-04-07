@@ -9,7 +9,10 @@ const createReview = catchAsync(async (req, res) => {
   const data = req.body;
 
   // call service function to create a new review
-  const result = await reviewServices.createReviewIntoDB(data);
+  const result = await reviewServices.createReviewIntoDB({
+    ...data,
+    createdBy: req?.user._id,
+  });
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
     success: true,

@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import AppError from '../../errors/AppError';
 import { TUserLogin, TUserRegister } from './auth.interface';
 import { AuthUserRegister } from './auth.model';
+import jwt from 'jsonwebtoken';
+import config from '../../config';
 
 const registerUserIntoDB = async (user: TUserRegister) => {
   const result = await AuthUserRegister.create(user);
@@ -24,6 +26,7 @@ const loginUserFromDB = async (payload: TUserLogin) => {
   const isUserExist = await AuthUserRegister.isUserExistByUsername(
     payload?.username,
   );
+
   if (!isUserExist) {
     throw new AppError(StatusCodes.NOT_FOUND, 'This username does not exist!');
   }
@@ -41,6 +44,15 @@ const loginUserFromDB = async (payload: TUserLogin) => {
     throw new AppError(StatusCodes.BAD_REQUEST, 'Wrong Password!');
   }
 
+  // create signIn token
+  const jwtPayload = {
+    _id: (isUserExist as any)._id,
+    role: isUserExist.role,
+    email: isUserExist.email,
+  };
+  const accessToken = jwt.sign(jwtPayload, config.jwt_secret as string, {
+    expiresIn: '30d',
+  });
   // send selective data to frontend
   const sendData = (isUserExist as any).toObject({
     virtuals: false,
@@ -53,7 +65,8 @@ const loginUserFromDB = async (payload: TUserLogin) => {
       delete ret.updatedAt;
     },
   });
-  return sendData;
+
+  return { user: sendData, token: accessToken };
 };
 
 export const authService = {

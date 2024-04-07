@@ -74,6 +74,11 @@ const courseSchema = new Schema<TCourse>(
       required: false,
     },
     details: detailSchema,
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'CreatedBy Id is required!'],
+      ref: 'User',
+    },
   },
   {
     timestamps: true,
@@ -107,4 +112,4 @@ courseSchema.pre('save', async function (next) {
   next();
 });
 
-export const CourseModel = model<TCourse>('course', courseSchema);
+export const CourseModel = model<TCourse>('Course', courseSchema);
