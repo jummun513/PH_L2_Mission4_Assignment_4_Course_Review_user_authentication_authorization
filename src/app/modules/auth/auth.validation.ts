@@ -18,7 +18,7 @@ const userRegisterValidationSchema = z.object({
     })
     .min(8, 'Password minimum length 8 characters!')
     .regex(
-      /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]+$/,
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
       'Password should contain A-Z, a-z, 0-9, special characters(@$!%*#?&).',
     ),
   role: z.enum(['user', 'admin'], {
@@ -40,12 +40,31 @@ const userLoginValidationSchema = z.object({
     })
     .min(8, 'Password minimum length 8 characters!')
     .regex(
-      /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]+$/,
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
       'Password should contain A-Z, a-z, 0-9, special characters(@$!%*#?&).',
+    ),
+});
+
+/*----------user change password validation schema------
+------------------------------------------------*/
+const passwordChangeValidationSchema = z.object({
+  currentPassword: z.string({
+    required_error: 'Current password field is required!',
+    invalid_type_error: 'Current password field allowed only string!',
+  }),
+  newPassword: z
+    .string({
+      required_error: 'Password is required!',
+    })
+    .min(8, 'New Password minimum length 8 characters!')
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
+      'New Password should contain A-Z, a-z, 0-9, special characters(@$!%*#?&).',
     ),
 });
 
 export const authValidations = {
   userRegisterValidationSchema,
   userLoginValidationSchema,
+  passwordChangeValidationSchema,
 };

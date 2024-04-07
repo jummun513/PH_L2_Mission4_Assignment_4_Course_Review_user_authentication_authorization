@@ -15,6 +15,11 @@ export type TUserLogin = {
   password: string;
 };
 
+export type TPasswordChange = {
+  currentPassword: string;
+  newPassword: string;
+};
+
 export interface UserRegistrationModel extends Model<TUserRegister> {
   isUserExistByUsername(username: string): Promise<TUserRegister>;
   isPasswordMatched(
