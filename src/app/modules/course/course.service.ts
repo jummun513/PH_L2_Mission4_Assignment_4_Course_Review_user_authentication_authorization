@@ -16,7 +16,10 @@ const getBestCourseFromDB = async () => {
 
   const bestCourseDetails = await CourseModel.findById(bestCourseData[0]._id, {
     __v: 0,
-  }).populate('createdBy', '-password -isDeleted -createdAt -updatedAt -__v');
+  }).populate(
+    'createdBy',
+    '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+  );
 
   const bestCourse = {
     course: bestCourseDetails,

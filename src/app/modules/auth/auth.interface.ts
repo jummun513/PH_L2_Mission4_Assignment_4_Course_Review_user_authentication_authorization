@@ -2,12 +2,18 @@
 import { Model } from 'mongoose';
 import { USER_ROLE } from './auth.constant';
 
+export type TPasswordChangeTrack = {
+  prevPassword: string;
+  storedTime: string;
+};
+
 export interface TUserRegister {
   username: string;
   email: string;
   password: string;
   role: 'user' | 'admin';
   isDeleted: boolean;
+  passwordChangeTrack: [TPasswordChangeTrack];
 }
 
 export type TUserLogin = {

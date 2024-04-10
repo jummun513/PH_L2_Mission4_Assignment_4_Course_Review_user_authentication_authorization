@@ -125,7 +125,10 @@ const getExpectedCoursesFromDB = async (query: Record<string, unknown>) => {
   const sortQuery = CourseModel.find(levelQueryObj, {
     __v: 0,
   })
-    .populate('createdBy', '-password -isDeleted -createdAt -updatedAt -__v')
+    .populate(
+      'createdBy',
+      '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+    )
     .sort(sortOptions);
 
   //pagination and limiting
@@ -151,11 +154,17 @@ const getSingleCourseWithReviewFromDB = async (courseId: string) => {
   const result = await CourseModel.findOne(
     { _id: courseId },
     { __v: 0 },
-  ).populate('createdBy', '-password -isDeleted -createdAt -updatedAt -__v');
+  ).populate(
+    'createdBy',
+    '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+  );
   const reviews = await ReviewModel.find(
     { courseId: courseId },
     { __v: 0 },
-  ).populate('createdBy', '-password -isDeleted -createdAt -updatedAt -__v');
+  ).populate(
+    'createdBy',
+    '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+  );
   return { course: result, reviews: reviews };
 };
 
@@ -252,6 +261,7 @@ const updateCourseIntoDB = async (courseId: string, data: Partial<TCourse>) => {
       const deleteTags = tags
         .filter(d => d.name && d.isDeleted)
         .map(d => d.name);
+      console.log(deleteTags);
       await CourseModel.findOneAndUpdate(
         { _id: courseId },
         {
@@ -265,6 +275,7 @@ const updateCourseIntoDB = async (courseId: string, data: Partial<TCourse>) => {
       );
       // add tags
       const addTags = tags.filter(d => d.name && !d.isDeleted);
+      console.log(addTags);
       await CourseModel.findOneAndUpdate(
         { _id: courseId },
         {
@@ -282,7 +293,7 @@ const updateCourseIntoDB = async (courseId: string, data: Partial<TCourse>) => {
 
     const result = await CourseModel.findById(courseId, { __v: 0 }).populate(
       'createdBy',
-      '-password -isDeleted -createdAt -updatedAt -__v',
+      '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
     );
     return result;
   } catch (error) {

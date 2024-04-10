@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 import { ErrorRequestHandler } from 'express';
@@ -15,64 +16,77 @@ import {
 } from 'jsonwebtoken';
 import { handleJwtError } from '../errors/handleJwtError';
 
+type TResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  errorMessage: string;
+  errorDetails: any;
+  stack: string | null;
+  data: any;
+};
+
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
-  let message = 'Something Went Wrong!';
-  let errorMessage = '';
-  let errorDetails = err;
-  let stack = err?.stack || null;
+  const response: Partial<TResponse> = { success: false };
+  response.message = 'Something Went Wrong!';
+  response.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
+  response.errorMessage = '';
+  response.errorDetails = err;
+  response.stack = err?.stack || null;
 
   if (err instanceof ZodError) {
     // zod validation error
     const simplifiedError = handleZodError(err);
-    statusCode = simplifiedError.statusCode;
-    message = simplifiedError.message;
-    errorMessage = simplifiedError?.errorMessage;
+    response.statusCode = simplifiedError.statusCode;
+    response.message = simplifiedError.message;
+    response.errorMessage = simplifiedError?.errorMessage;
   } else if (err?.name === 'ValidationError') {
     // mongoose validation error
     const simplifiedError = handleValidationError(err);
-    statusCode = simplifiedError.statusCode;
-    message = simplifiedError?.message;
-    errorMessage = simplifiedError?.errorMessage;
-    errorDetails = err?.errors;
+    response.statusCode = simplifiedError.statusCode;
+    response.message = simplifiedError?.message;
+    response.errorMessage = simplifiedError?.errorMessage;
+    response.errorDetails = err?.errors;
   } else if (err?.name === 'CastError') {
     // mongoDb find by Id not found error
     const simplifiedError = handleCastError(err);
-    statusCode = simplifiedError.statusCode;
-    message = simplifiedError?.message;
-    errorMessage = simplifiedError?.errorMessage;
+    response.statusCode = simplifiedError.statusCode;
+    response.message = simplifiedError?.message;
+    response.errorMessage = simplifiedError?.errorMessage;
   } else if (err?.code === 11000) {
     // mongoDb unique key validation error
     const simplifiedError = handleDuplicateError(err);
-    statusCode = simplifiedError.statusCode;
-    message = simplifiedError?.message;
-    errorMessage = simplifiedError?.errorMessage;
+    response.statusCode = simplifiedError.statusCode;
+    response.message = simplifiedError?.message;
+    response.errorMessage = simplifiedError?.errorMessage;
   } else if (err instanceof AppError) {
     // throw new Error/AppError handle
-    statusCode = err?.statusCode;
-    message = 'App Error';
-    errorMessage = err?.message;
+    response.statusCode = err?.statusCode;
+    response.message = 'App Error';
+    response.errorMessage = err?.message;
   } else if (
     err instanceof JsonWebTokenError ||
     err instanceof TokenExpiredError ||
     err instanceof NotBeforeError
   ) {
     const simplifiedError = handleJwtError(err);
-    statusCode = simplifiedError.statusCode;
-    message = simplifiedError?.message;
-    errorMessage = simplifiedError?.errorMessage;
-    errorDetails = null;
-    stack = null;
+    response.statusCode = simplifiedError.statusCode;
+    response.message = simplifiedError?.message;
+    response.errorMessage = simplifiedError?.errorMessage;
+    response.errorDetails = null;
+    response.stack = null;
+  } else if (err.message === 'passwordError') {
+    response.statusCode = StatusCodes.BAD_REQUEST;
+    response.message =
+      'Password change failed. Ensure the new password is unique and not among the last 2 used (last used on 2023-01-01 at 12:00 PM).';
+    delete response.errorMessage;
+    delete response.errorDetails;
+    delete response.stack;
+    response.data = null;
   }
 
-  return res.status(statusCode).json({
-    success: false,
-    message,
-    errorMessage,
-    errorDetails,
-    // stack: config.node_env === 'development' ? err?.stack : null,
-    stack,
-  });
+  // stack: config.node_env === 'development' ? err?.stack : null,
+  return res.status(response.statusCode).json(response);
 };
 
 export default globalErrorHandler;

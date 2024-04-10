@@ -1,9 +1,25 @@
 import { Schema, model } from 'mongoose';
-import { TUserRegister, UserRegistrationModel } from './auth.interface';
+import {
+  TPasswordChangeTrack,
+  TUserRegister,
+  UserRegistrationModel,
+} from './auth.interface';
 import bcrypt from 'bcrypt';
 import config from '../../config';
 import AppError from '../../errors/AppError';
 import { StatusCodes } from 'http-status-codes';
+
+const passwordChangeTrackSchema = new Schema<TPasswordChangeTrack>(
+  {
+    prevPassword: {
+      type: String,
+    },
+    storedTime: {
+      type: String,
+    },
+  },
+  { _id: false },
+);
 
 const userRegisterSchema = new Schema<TUserRegister, UserRegistrationModel>(
   {
@@ -31,6 +47,7 @@ const userRegisterSchema = new Schema<TUserRegister, UserRegistrationModel>(
       type: Boolean,
       default: false,
     },
+    passwordChangeTrack: [passwordChangeTrackSchema],
   },
   {
     timestamps: true,

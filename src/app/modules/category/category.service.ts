@@ -17,7 +17,10 @@ const createCategoryIntoDB = async (category: TCategory) => {
 
 const getAllCategoriesFromDB = async () => {
   const result = await CategoryModel.find()
-    .populate('createdBy', '-password -isDeleted -createdAt -updatedAt -__v')
+    .populate(
+      'createdBy',
+      '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+    )
     .select('-__v');
   return result;
 };
