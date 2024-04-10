@@ -19,7 +19,7 @@ const getAllCategoriesFromDB = async () => {
   const result = await CategoryModel.find()
     .populate(
       'createdBy',
-      '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+      '-passwordChangeTrack -password -isDeleted -createdAt -updatedAt -__v',
     )
     .select('-__v');
   return result;

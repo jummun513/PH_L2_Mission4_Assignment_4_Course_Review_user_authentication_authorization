@@ -18,7 +18,7 @@ const getBestCourseFromDB = async () => {
     __v: 0,
   }).populate(
     'createdBy',
-    '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+    '-password -isDeleted -passwordChangeTrack -createdAt -updatedAt -__v',
   );
 
   const bestCourse = {

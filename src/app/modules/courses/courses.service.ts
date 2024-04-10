@@ -127,7 +127,7 @@ const getExpectedCoursesFromDB = async (query: Record<string, unknown>) => {
   })
     .populate(
       'createdBy',
-      '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+      '-passwordChangeTrack -password -isDeleted -createdAt -updatedAt -__v',
     )
     .sort(sortOptions);
 
@@ -156,14 +156,14 @@ const getSingleCourseWithReviewFromDB = async (courseId: string) => {
     { __v: 0 },
   ).populate(
     'createdBy',
-    '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+    '-passwordChangeTrack -password -isDeleted -createdAt -updatedAt -__v',
   );
   const reviews = await ReviewModel.find(
     { courseId: courseId },
     { __v: 0 },
   ).populate(
     'createdBy',
-    '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+    '-passwordChangeTrack -password -isDeleted -createdAt -updatedAt -__v',
   );
   return { course: result, reviews: reviews };
 };
@@ -293,7 +293,7 @@ const updateCourseIntoDB = async (courseId: string, data: Partial<TCourse>) => {
 
     const result = await CourseModel.findById(courseId, { __v: 0 }).populate(
       'createdBy',
-      '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+      '-passwordChangeTrack -password -isDeleted -createdAt -updatedAt -__v',
     );
     return result;
   } catch (error) {

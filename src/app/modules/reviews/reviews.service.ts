@@ -6,7 +6,7 @@ const createReviewIntoDB = async (review: TReview) => {
 
   const sendData = await ReviewModel.findOne(result._id, { __v: 0 }).populate(
     'createdBy',
-    '-password -isDeleted -createdAt -updatedAt -__v -passwordChangeTrack',
+    '-passwordChangeTrack -password -isDeleted -createdAt -updatedAt -__v',
   );
   return sendData;
 };
